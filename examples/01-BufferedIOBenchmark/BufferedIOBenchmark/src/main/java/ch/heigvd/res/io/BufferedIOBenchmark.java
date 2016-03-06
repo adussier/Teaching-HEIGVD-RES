@@ -25,6 +25,10 @@ import java.util.logging.Logger;
 public class BufferedIOBenchmark {
 
 	static final Logger LOG = Logger.getLogger(BufferedIOBenchmark.class.getName());
+        
+        // data serializer and recorder
+        static final ISerializer SERIALIZER = new CsvSerializer();
+        static final IRecorder RECORDER = new FileRecorder("benchmark_metrics.csv", SERIALIZER);
 
 	/**
 	 * This enum is used to describe the 4 different strategies for doing the IOs
@@ -74,7 +78,11 @@ public class BufferedIOBenchmark {
 				LOG.log(Level.SEVERE, ex.getMessage(), ex);
 			}
 		}
-		LOG.log(Level.INFO, "  > Done in {0} ms.", Timer.takeTime());
+                
+                // log the result
+                long timeTaken = Timer.takeTime();
+		LOG.log(Level.INFO, "  > Done in {0} ms.", timeTaken);
+                RECORDER.record(new BenchmarkData("WRITE", ioStrategy.toString(), numberOfBytesToWrite, blockSize, timeTaken));
 	}
 	
 	/**
@@ -149,8 +157,11 @@ public class BufferedIOBenchmark {
 				LOG.log(Level.SEVERE, ex.getMessage(), ex);
 			}
 		}
-		LOG.log(Level.INFO, "  > Done in {0} ms.", Timer.takeTime());
-
+                
+                // log the result
+                long timeTaken = Timer.takeTime();
+		LOG.log(Level.INFO, "  > Done in {0} ms.", timeTaken);
+                RECORDER.record(new BenchmarkData("READ", ioStrategy.toString(), NUMBER_OF_BYTES_TO_WRITE, blockSize, timeTaken));
 	}
 
 	/**
@@ -187,6 +198,9 @@ public class BufferedIOBenchmark {
 	 */
 	public static void main(String[] args) {
 		System.setProperty("java.util.logging.SimpleFormatter.format", "%5$s %n");
+                
+                // init the data recorder
+                RECORDER.init();
 
 		BufferedIOBenchmark bm = new BufferedIOBenchmark();
 
